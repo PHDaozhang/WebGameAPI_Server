@@ -15,6 +15,7 @@ const(
 	TABLE_PAY_COLLECTION_ORDER		=	"Order"			//上下分集合，两张表合一张表
 	TABLE_COLLECTION_SERVERLIST	    = "ServerList"
 	TABKE_COLLECTION_PLAYERINFO		=	"PlayerInfo"		//游戏玩家的信息
+	TABLE_COLLECTION_SERVER_INFO	=	"ServerInfo"		//当前玩家在某个服务器上面列表
 )
 
 const(

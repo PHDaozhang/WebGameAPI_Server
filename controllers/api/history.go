@@ -1,18 +1,19 @@
 package api
 
 import (
-	"github.com/astaxie/beego"
-	"github.com/astaxie/beego/httplib"
-	"github.com/astaxie/beego/logs"
-	"github.com/astaxie/beego/orm"
-	"github.com/astaxie/beego/validation"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"web-game-api/controllers/system"
 	"web-game-api/core/mulMongo"
 	"web-game-api/logic/errorCode"
 	"web-game-api/logic/gameEnum"
 	"web-game-api/models/api"
+
+	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/httplib"
+	"github.com/astaxie/beego/logs"
+	"github.com/astaxie/beego/orm"
+	"github.com/astaxie/beego/validation"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type HistoryController struct {
@@ -20,7 +21,6 @@ type HistoryController struct {
 }
 
 type reqSearchDto struct {
-
 }
 
 ///admin/operationgamedetail/gamedetail 获取游戏列表
@@ -35,15 +35,15 @@ type reqSearchDto struct {
 // @Param    PageSize     		query    	 string    true   单页数据量
 // @Success 200 {object} beego.M
 // @router /gamedetail [get]
-func (this *HistoryController)GameDetail(){
+func (this *HistoryController) GameDetail() {
 	req := struct {
-		Agent 			int		`valid:"Required"`
-		Account			string
-		BeginTime		int
-		EndTime			int
-		GameId			int
-		Page			int	`valid:"Required"`
-		PageSize		int	`valid:"Required"`
+		Agent     int `valid:"Required"`
+		Account   string
+		BeginTime int
+		EndTime   int
+		GameId    int
+		Page      int `valid:"Required"`
+		PageSize  int `valid:"Required"`
 	}{}
 
 	if err := this.ParseForm(&req); err != nil {
@@ -51,23 +51,23 @@ func (this *HistoryController)GameDetail(){
 	}
 
 	valid := validation.Validation{}
-	b,err := valid.Valid(&req)
+	b, err := valid.Valid(&req)
 	if err != nil || !b {
-		logs.Error("login",err)
-		this.Error(errorCode.PARAM_ERROR,"参数错误")
+		logs.Error("login", err)
+		this.Error(errorCode.PARAM_ERROR, "参数错误")
 	}
 
 	resultDto := struct {
-		Account				string
-		PlayerId			int
+		Account  string
+		PlayerId int
 	}{}
 	if req.Account != "" {
 		//根据account查询玩家的playerId
-		query := bson.M{"Account":req.Account}
+		query := bson.M{"Account": req.Account}
 		selector := bson.M{}
-		err = mulMongo.FindOne(gameEnum.DB_NAME_PLAYER,gameEnum.TABKE_COLLECTION_PLAYERINFO,&query,selector,&resultDto)
+		err = mulMongo.FindOne(gameEnum.DB_NAME_PLAYER, gameEnum.TABKE_COLLECTION_PLAYERINFO, &query, selector, &resultDto)
 		if err != nil {
-			this.Error(errorCode.DB_OPER_ERROR,"查询mongo数据库玩家信息报错")
+			this.Error(errorCode.DB_OPER_ERROR, "查询mongo数据库玩家信息报错")
 		}
 	}
 
@@ -85,27 +85,27 @@ func (this *HistoryController)GameDetail(){
 	}
 
 	url := beego.AppConfig.String("game_cloud_url")
-	url += "/api/operationgamedetail/gamedetail"					//这里可能会不一样，需要与云平台对比下
-	url	+= "?"
-	url += "Page=" + strconv.Itoa(req.Page)  + "&PageSize=" + strconv.Itoa(req.PageSize)
+	url += "/api/operationgamedetail/gamedetail" //这里可能会不一样，需要与云平台对比下
+	url += "?"
+	url += "Page=" + strconv.Itoa(req.Page) + "&PageSize=" + strconv.Itoa(req.PageSize)
 	if resultDto.PlayerId > 0 {
 		url += "&PlayerId=" + strconv.Itoa(resultDto.PlayerId)
 	}
 	if req.GameId > 0 {
-		url +=  "&GameId=" + strconv.Itoa(req.GameId)
+		url += "&GameId=" + strconv.Itoa(req.GameId)
 	}
 	if req.BeginTime > 0 {
-		url +=  "&BeginTime=" + strconv.Itoa(req.BeginTime)
+		url += "&BeginTime=" + strconv.Itoa(req.BeginTime)
 	}
 	if req.BeginTime > 0 {
-		url +=  "&EndTime=" + strconv.Itoa(req.EndTime)
+		url += "&EndTime=" + strconv.Itoa(req.EndTime)
 	}
 	if req.Agent > 0 {
-		url +=  "&Agent=" + strconv.Itoa(req.Agent)
+		url += "&Agent=" + strconv.Itoa(req.Agent)
 	}
 
 	httpReq := httplib.Get(url)
-	responseStr,err := httpReq.String()
+	responseStr, err := httpReq.String()
 
 	if err != nil {
 		this.Code = errorCode.INNER_ERROR
@@ -123,7 +123,7 @@ func (this *HistoryController)GameDetail(){
 // @Param    DetailId      		query    	 string    true  关联游戏数据ID
 // @Param    SelfDetailId      	query    	 string    false  关联游戏用户数据ID
 // @Success 200 {object} beego.M
-func (this *HistoryController)Onegamedetail(){
+func (this *HistoryController) Onegamedetail() {
 	//req := struct {
 	//	GameId 				string
 	//	DetailId			string
