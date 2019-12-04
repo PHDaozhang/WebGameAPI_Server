@@ -9,6 +9,7 @@ import (
 	"web-game-api/controllers/admin"
 	"github.com/astaxie/beego"
 	"web-game-api/controllers/api"
+	"web-game-api/controllers/saApi"
 	"web-game-api/controllers/system"
 	"web-game-api/controllers/webApi"
 )
@@ -65,8 +66,14 @@ func init() {
 		beego.NSNamespace("/sonuser", beego.NSInclude(&admin.SonUserController{})),
 	)
 
-
 	beego.AddNamespace(adminNs)
+
+
+	/********/
+	saNS := beego.NewNamespace("/sa",
+		beego.NSNamespace("/api", beego.NSInclude(&saApi.SAPlatformUser{})),
+	)
+	beego.AddNamespace(saNS)
 
 	//bee run -gendoc=true -downdoc=true
 }

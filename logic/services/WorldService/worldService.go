@@ -11,7 +11,7 @@ import (
 func GetWorldHttpPath(account string)(path string){
 	serverInfo := struct {
 		WorldId 			int64  `bson:"WorldId"`
-		IsConnect			int64 `bson:"IsConnect"`
+		IsConnect			int64  `bson:"IsConnect"`
 		Account				string `bson:"Account"`
 	}{}
 

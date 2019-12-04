@@ -236,3 +236,29 @@ func (this *TestController) SelectWorld() {
 	path := WorldService.GetWorldHttpPath(account)
 	this.Success(path)
 }
+
+//<?xml version="1.0" encoding="utf-8"?>
+//<LoginRequestResponse xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+//    <Token>XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Token>
+//    <DisplayName>”cstest@cs”</DisplayName>
+//    <ErrorMsgId>0</ErrorMsgId>
+//    <ErrorMsg>Success</ErrorMsg>
+//</LoginRequestResponse>
+// @Title 查询下当前玩家在某个服务器上面，返回其所在服务器上面的http服务器地址与端口
+// @Description 测试查询订单
+// @Success 1 {object} admin.Admin
+// @Param    Account    query    string    false  玩家账号
+// @router   /salogin [post]
+func (this *TestController) SaLogin() {
+	//xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlStr := `<?xml version="1.0" encoding="utf-8"?>
+<LoginRequestResponse >
+    <Token>XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</Token>
+    <DisplayName>cstest@cs</DisplayName>
+    <ErrorMsgId>0</ErrorMsgId>
+    <ErrorMsg>Success</ErrorMsg>
+</LoginRequestResponse>`
+
+	this.Ctx.Output.Body([]byte(xmlStr))
+	this.StopRun()
+}
