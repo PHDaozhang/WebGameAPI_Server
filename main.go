@@ -13,6 +13,8 @@ import (
 	"web-game-api/core/cache"
 	"web-game-api/core/mulMongo"
 	"web-game-api/logic/filters"
+	"web-game-api/logic/manager"
+	"web-game-api/logic/services/WorldService"
 	_ "web-game-api/routers"
 )
 
@@ -62,6 +64,10 @@ func main() {
 	cache.InitRedis();
 
 	tsRand.Seed(time.Now().UnixNano())
+
+	//初始化两个配置表
+	WorldService.GetInstance().Init()
+	manager.GetInstance().Init()
 
 	beego.Run()
 }

@@ -1,0 +1,10 @@
+{
+	"serverURLs": ["http://www.shiyuantest.com:20004/", "http://www.seteleme.com:20004/"],
+	"backupServerURLs": ["http://www.wanpengyy.com:20004"],
+	"chatURL": "http://www.51supershopping.com:20002/im-web/",
+	"chatUseSDK": true,
+	"gameURL": "http://www.shiyuantest.com:20004",
+	"gameUseSDK": true,
+	"resourceURL": "http://www.dnafoll.com/",
+	"resourceUseSDK": false
+}

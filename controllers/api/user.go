@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 	"tsEngine/tsCrypto"
 	"web-game-api/controllers/system"
@@ -18,8 +19,11 @@ import (
 	"web-game-api/logic/common"
 	"web-game-api/logic/errorCode"
 	"web-game-api/logic/gameEnum"
+	"web-game-api/logic/manager"
+	"web-game-api/logic/services/WorldService"
 	"web-game-api/logic/utils"
 	"web-game-api/models/api"
+	"web-game-api/models/dto"
 )
 
 type UserController struct{
@@ -57,6 +61,8 @@ func (this *UserController)Login()  {
 		logs.Error("login",err)
 		this.Error(errorCode.PARAM_ERROR,"参数错误")
 	}
+
+	channelId := strconv.FormatInt(reqDto.Agent,10)
 
 	valid := validation.Validation{}
 	b,err := valid.Valid(&reqDto)
@@ -102,23 +108,11 @@ func (this *UserController)Login()  {
 		this.Error(errorCode.SIGN_ERROR,"签名不正确")
 	}
 
-	//查找可用的web服务器地址
-	configQuery := bson.M{"ServerType":1,"GateType":"web"}
-	serverListInfoList := []api.ServerListInfo{}
-	err = mulMongo.FindAllByCondition(gameEnum.DB_NAME_CONFIG,gameEnum.TABLE_COLLECTION_SERVERLIST,configQuery,bson.M{},"",0,100,&serverListInfoList)
-	if err != nil {
-		this.Error(errorCode.DB_OPER_ERROR,"查询Gate服务器出错")
-	}
-
-	if len(serverListInfoList) == 0 {
-		this.Error(errorCode.GATE_SERVER_ERROR,"没有可用的门服务器地址")
-	}
-
-	randIdx := rand.Intn(len(serverListInfoList))
-	serverListInfo := serverListInfoList[ randIdx ]
-	gameip := serverListInfo.Host
-	if gameip == "" {
-		gameip =  serverListInfo.ServerIp
+	//不存在的渠道不能进入
+	agentInfo := dto.AgentInfo{}
+	err = mulMongo.FindOne(gameEnum.DB_NAME_CONFIG,gameEnum.TABLE_COLLECTION_AGENT_INFO,bson.M{"ChannelId":channelId},bson.M{},&agentInfo)
+	if err != nil || (err != nil && err.Error() == "not found") {
+		this.Error(errorCode.AGENT_UNEXIST,"代理不存在" + channelId)
 	}
 
 	//查询是否有此玩家
@@ -129,7 +123,7 @@ func (this *UserController)Login()  {
 	err = mulMongo.FindOne(gameEnum.DB_NAME_ACCOUNT,gameEnum.ACCOUNT_COLLECTION_TABLE,&bson.M{"Account":accountDbInfoAccountName},&bson.M{},&accountDbInfo)
 	if err == nil {
 		//如果有此玩家，则更新玩家的 randKey与lastTime
-		accountDbInfo.RandKey =  strconv.Itoa(rand.Int())
+		accountDbInfo.RandKey =  rand.Int31()
 		accountDbInfo.LastTime = reqDto.Timestamp / 1000
 		err =  mulMongo.Update(gameEnum.DB_NAME_ACCOUNT,gameEnum.ACCOUNT_COLLECTION_TABLE,bson.M{"Account":accountDbInfoAccountName},&accountDbInfo)
 		if err != nil {
@@ -149,11 +143,14 @@ func (this *UserController)Login()  {
 		accountDbInfo.Account = accountDbInfoAccountName;
 		accountDbInfo.LastTime = reqDto.Timestamp
 		accountDbInfo.LastIp = reqDto.Ip
-		accountDbInfo.ChannelId = strconv.FormatInt(reqDto.Agent,10)
+		accountDbInfo.ChannelId = strconv.FormatInt(reqDto.Agent,10)					//渠道号
+		accountDbInfo.ClientChannelId = strconv.FormatInt(reqDto.Agent,10)			//包渠道号
 		accountDbInfo.RegisterIp = reqDto.Ip
 		accountDbInfo.Level = 1
-		accountDbInfo.RandKey =  strconv.Itoa(rand.Int())
+		accountDbInfo.RandKey =  rand.Int31()
 		accountDbInfo.RegisterTime = time.Now()
+		accountDbInfo.Platform = "web"
+		accountDbInfo.DevicePlatform = "web"
 
 		err = mulMongo.Insert(gameEnum.DB_NAME_ACCOUNT,gameEnum.ACCOUNT_COLLECTION_TABLE, &accountDbInfo)
 
@@ -164,24 +161,32 @@ func (this *UserController)Login()  {
 		isNew = true
 	}
 
-
+	serverInfo,ok := WorldService.GetInstance().AllocServer(accountDbInfoAccountName)
+	if !ok {
+		this.Error(errorCode.GATE_SERVER_ERROR)
+	}
 
 	returnMsgStruct :=common.ReturnMsgStruct{}
 	if reqDto.Currency > 0 {
 		TransMoney(reqDto.Agent,reqDto.Timestamp,reqDto.Account,gameEnum.TRANS_OTHER_TO_US,reqDto.OrderId,reqDto.Sign,reqDto.Currency,&returnMsgStruct)
 	}
 
+	urlConfig := manager.GetInstance().GetJsonUrlDiffer("")
+
 	this.Code = errorCode.SUCC
 	this.Msg = "ok"
 
-	token := accountDbInfo.RandKey+ ":" + strconv.FormatInt(accountDbInfo.LastTime,10)
+	token := strconv.FormatInt(int64(accountDbInfo.RandKey),10) + ":" + strconv.FormatInt(accountDbInfo.LastTime,10)
 	token = tsCrypto.GetMd5([]byte(token))
+	//为与服务器的校验一致，需要转换为大写
+	token = strings.ToUpper(token)
 	game_url := beego.AppConfig.String("game_client_url")
 	game_url += "?info=" + token
 	game_url += "&acc=" + accountDbInfo.Account
-	game_url += "&gameip=" + gameip
+	game_url += "&gameip=" + serverInfo.GateIp
 	game_url += "&homeUrl=" + reqDto.HomeUrl
 	game_url += "&gameId="+ strconv.Itoa(gameId)
+	game_url += "&urlConfig=" +  urlConfig
 
 	resultMap := map[string]interface{}{}
 	resultMap["url"] = game_url

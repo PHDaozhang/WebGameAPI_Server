@@ -81,7 +81,7 @@ func (this *TestController) TestLogin() {
 	}
 	url += "&sign=" + utils.GenSign(agent, cur_tm_ms, appKey)
 
-	logs.Trace(url)
+	logs.Info(url)
 
 	req := httplib.Get(url)
 

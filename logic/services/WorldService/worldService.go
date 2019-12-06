@@ -7,6 +7,8 @@ import (
 	"web-game-api/logic/gameEnum"
 )
 
+
+
 //模仿ts 代码，根据玩家账号获取一个可用的服务器地址
 func GetWorldHttpPath(account string)(path string){
 	serverInfo := struct {

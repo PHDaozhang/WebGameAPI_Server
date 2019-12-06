@@ -21,6 +21,7 @@ const(
 	ADMIN_NOT_PERMISSION			=	10016			//权限不够
 	GATE_SERVER_ERROR				=	10017			//找不到Gate服务器地址
 
+
 	ORDER_PROCESS_DONE				=	20000			//订单已处理
 )
 

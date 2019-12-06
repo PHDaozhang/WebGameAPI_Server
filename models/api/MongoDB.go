@@ -7,7 +7,7 @@ import (
 
 type AccountDBInfo struct {
 	Id_					bson.ObjectId `bson:"_id"`
-	RandKey				string `bson:"RandKey"`
+	RandKey				int32 `bson:"RandKey"`
 	LastTime			int64 `bson:"LastTime"`
 	LastIp				string `bson:"LastIp"`
 	Account				string `bson:"Account"`
@@ -17,7 +17,8 @@ type AccountDBInfo struct {
 	DeviceId			string `bson:"DeviceId"`
 	DevicePlatform		string `bson:"DevicePlatform"`
 	Platform			string `bson:"Platform"`
-	ChannelId			string `bson:"ChannelId"`
+	ChannelId			string `bson:"ChannelId"`						//渠道号
+	ClientChannelId		string `bson:"ClientChannelId"`					//包渠道号
 	RegisterTime		time.Time `bson:"RegisterTime"`					//此处需要插入date数据
 	RegisterIp			string `bson:"RegisterIp"`
 	Level				int64 `bson:"Level"`
